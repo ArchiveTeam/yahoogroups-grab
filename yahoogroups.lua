@@ -40,7 +40,10 @@ end
 
 allowed = function(url, parenturl)
   if string.match(url, "'+")
-      or string.match(url, "[<>\\%*%$;%^%[%],%(%){}]") then
+      or string.match(url, "[<>\\%*%$;%^%[%],%(%){}]")
+      or string.match(url, "^https?://login%.yahoo%.com/")
+      or string.match(url, "^https?://b%.scorecardresearch%.com/")
+      or string.match(url, "^https?://xa%.yimg%.com/$") then
     return false
   end
 
@@ -53,6 +56,11 @@ allowed = function(url, parenturl)
       return false
     end
     tested[s] = tested[s] + 1
+  end
+
+  if string.match(url, "^https?://s%.yimg%.com/[^/]+/defcovers/")
+      or string.match(url, "^https?://xa%.yimg%.com") then
+    return true
   end
 
   for s in string.gmatch(url, "([a-z0-9A-Z_%-]+)") do
@@ -68,7 +76,8 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
   local url = urlpos["url"]["url"]
   local html = urlpos["link_expect_html"]
 
-  if string.match(url, "[<>\\%*%$;%^%[%],%(%){}\"]") then
+  if string.match(url, "[<>\\%*%$;%^%[%],%(%){}\"]")
+      or string.match(url, "^https?://b%.scorecardresearch%.com/") then
     return false
   end
 
@@ -149,26 +158,40 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   end
 
   local function extract_timezone(html_)
-    return string.gsub(string.match(html_, 'GROUPS%.TIMEZONE%s*=%s*"([^"]+)";'), "/", "%2B")
+    return string.gsub(string.match(html_, 'GROUPS%.TIMEZONE%s*=%s*"([^"]+)";'), "/", "%%2B")
   end
 
-  if allowed(url, nil) then
+  if allowed(url, nil) and status_code == 200 then
     html = read_file(file)
-    if string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[a-zA-Z0-9_%-]+$") then
+    if string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[a-zA-Z0-9_%-]+/info$") then
       local timezone = extract_timezone(html)
       local group = extract_group(url)
+      check("https://groups.yahoo.com/neo/groups/" .. group)
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/history?chrome=raw&tz=" .. timezone)
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/")
     elseif string.match(url, "^https?://groups%.yahoo%.com/api/v1/groups/[^/]+/history"--[[%?chrome=raw"]]) then
       local data = load_json_file(html)
       local group = extract_group(url)
-      for _, year_data in ipairs(data["ygData"]["messageHistory"]) do
-        for _, month_data in ipairs(year_data["months"]) do
-          check("https://groups.yahoo.com/neo/groups/" .. group .. "/conversations/messages?messageStartId=" .. month_data["firstMessageId"] .. "&archiveSearch=true")
+      local read = false
+      for _, capability in ipairs(data["ygPerms"]["resourceCapabilityList"]) do
+        if capability["resourceType"] == "MESSAGE"
+            or capability["resourceType"] == "POST" then
+          for _, resource_type in ipairs(capability["capabilities"]) do
+            if resource_type["name"] == "READ" then
+              read = true
+            end
+          end
+        end
+      end
+      if read then
+        for _, year_data in ipairs(data["ygData"]["messageHistory"]) do
+          for _, month_data in ipairs(year_data["months"]) do
+            check("https://groups.yahoo.com/neo/groups/" .. group .. "/conversations/messages?messageStartId=" .. month_data["firstMessageId"] .. "&archiveSearch=true")
+          end
         end
       end
     elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/messages%?messageStartId=[0-9]+") then
-      local post_id = string.match(url, "([0-9]+)$")
+      local post_id = string.match(url, "messageStartId=([0-9]+)")
       local group = extract_group(url)
       local timezone = extract_timezone(html)
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages?start=" .. post_id .. "&count=15&sortOrder=asc&direction=1&chrome=raw&tz=" .. timezone)
@@ -225,8 +248,8 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
 
-  if string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[a-zA-Z0-9_%-]+$") then
-    ids[string.match(url, "[a-z0-9A-Z_%-]+$")] = true
+  if string.match(url["url"], "^https?://groups%.yahoo%.com/neo/groups/[a-zA-Z0-9_%-]+/info$") then
+    ids[string.match(url["url"], "([a-z0-9A-Z_%-]+)/info$")] = true
   end
 
   if status_code >= 300 and status_code <= 399 then
