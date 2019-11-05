@@ -205,9 +205,10 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/messages/[0-9]+$") then
       local post_id = string.match(url, "([0-9]+)$")
       local timezone = extract_timezone(html)
-      check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. message_data["messageId"] .. "/raw?chrome=raw&tz=" .. timezone)
-      check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/1/")
-      check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/1/raw")
+      local group = extract_group(url)
+      check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw?chrome=raw&tz=" .. timezone)
+      check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/")
+      check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw")
     elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/topics/[0-9]+$") then
       local topic_id = string.match(url, "([0-9]+)$")
       local timezone = extract_timezone(html)
