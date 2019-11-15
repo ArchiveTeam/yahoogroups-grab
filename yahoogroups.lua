@@ -43,7 +43,8 @@ allowed = function(url, parenturl)
       or string.match(url, "[<>\\%*%$;%^%[%],%(%){}]")
       or string.match(url, "^https?://login%.yahoo%.com/")
       or string.match(url, "^https?://b%.scorecardresearch%.com/")
-      or string.match(url, "^https?://xa%.yimg%.com/$") then
+      or string.match(url, "^https?://xa%.yimg%.com/$")
+      or string.match(url, "^https?://dmros%.ysm%.yahoo%.com/") then
     return false
   end
 
@@ -77,7 +78,9 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
   local html = urlpos["link_expect_html"]
 
   if string.match(url, "[<>\\%*%$;%^%[%],%(%){}\"]")
-      or string.match(url, "^https?://b%.scorecardresearch%.com/") then
+      or string.match(url, "^https?://b%.scorecardresearch%.com/")
+      or string.match(url, "^https?://xa%.yimg%.com/$")
+      or string.match(url, "^https?://dmros%.ysm%.yahoo%.com/") then
     return false
   end
 
@@ -161,7 +164,8 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     return string.gsub(string.match(html_, 'GROUPS%.TIMEZONE%s*=%s*"([^"]+)";'), "/", "%%2B")
   end
 
-  if allowed(url, nil) and status_code == 200 then
+  if allowed(url, nil) and status_code == 200
+      and not string.match(url, "^https?://[^/]*yimg%.com/") then
     html = read_file(file)
     if string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[a-zA-Z0-9_%-]+/info$") then
       local timezone = extract_timezone(html)
@@ -195,11 +199,11 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local group = extract_group(url)
       local timezone = extract_timezone(html)
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages?start=" .. post_id .. "&count=15&sortOrder=asc&direction=1&chrome=raw&tz=" .. timezone)
-    elseif string.match(url, "^https://groups.yahoo.com/api/v1/groups/[^/]+/messages"--[[?start=[0-9]+&count=[0-9]+&sortOrder=asc&direction=1&chrome=raw"]]) then
+    elseif string.match(url, "^https://groups.yahoo.com/api/v1/groups/[^/]+/messages%?"--[[start=[0-9]+&count=[0-9]+&sortOrder=asc&direction=1&chrome=raw"]]) then
       local group = extract_group(url)
       local data = load_json_file(html)
       check(string.gsub(url, "start=[0-9]+", "start=" .. data["ygData"]["nextPageStart"]))
-      for _, message_data in data["ygData"]["messages"] do
+      for _, message_data in ipairs(data["ygData"]["messages"]) do
         check("https://groups.yahoo.com/neo/groups/" .. group .. "/conversations/messages/" .. message_data["messageId"])
       end
     elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/messages/[0-9]+$") then
