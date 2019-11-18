@@ -218,7 +218,9 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local timezone = extract_timezone(html)
       local group = extract_group(url)
       check("https://groups.yahoo.com/neo/groups/" .. group .. "/conversations/topics/" .. topic_id .. "?noImage=true&noNavbar=true&_gb=GB0&chrome=raw&tz=" .. timezone)
+https://groups.yahoo.com/neo/groups/groupmanagersforum/conversations/topics?noImage=true&noNavbar=true&_gb=GB1&chrome=raw&tz=America%2FLos_Angeles&ts=1573870193867
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/topics/1")
+    elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/topics$"
     end
     for newurl in string.gmatch(string.gsub(html, "&quot;", '"'), '([^"]+)') do
       checknewurl(newurl)
