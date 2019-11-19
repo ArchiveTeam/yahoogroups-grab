@@ -318,6 +318,12 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
 
+  if downloaded[url["url"]] then
+    io.stdout:write("Already got URL. Likely incomplete response.\n")
+    io.stdout:flush()
+    return wget.actions.EXIT
+  end
+
   if string.match(url["url"], "^https?://groups%.yahoo%.com/neo/groups/[a-zA-Z0-9_%-]+/info$") then
     ids[string.match(url["url"], "([a-z0-9A-Z_%-]+)/info$")] = true
   end
