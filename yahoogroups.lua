@@ -64,9 +64,11 @@ allowed = function(url, parenturl)
     return true
   end
 
-  for s in string.gmatch(url, "([a-z0-9A-Z_%-]+)") do
-    if ids[s] then
-      return true
+  if string.match(url, "^https?://groups%.yahoo%.com") then
+    for s in string.gmatch(url, "([a-z0-9A-Z_%-]+)") do
+      if ids[s] then
+        return true
+      end
     end
   end
 
@@ -232,7 +234,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/messages$") then
       local timezone = extract_timezone(html)
       local group = extract_group(url)
-      local nextpage = string.match(url, 'data%-prev%-page%-start="([0-9]+)"')
+      local nextpage = string.match(html, 'data%-prev%-page%-start="([0-9]+)"')
       check("https://groups.yahoo.com/neo/groups/" .. group .. "/conversations/messages?noImage=true&noNavbar=true&chrome=raw&tz=" .. timezone)
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages?start=" .. nextpage .. "&count=15&sortOrder=desc&direction=-1&chrome=raw&tz=" .. timezone)
 
@@ -242,16 +244,16 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local group = extract_group(url)
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw?chrome=raw&tz=" .. timezone)
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/")
-      check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw")
+      --check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw")
       local match = string.match(html, "(%?advance=true&am=CONTAINS&at=email:[^@]+@&dm=IS_ANY&fs=false&count=)[0-9]+")
       if match then
         check("https://groups.yahoo.com/api/v1/search/groups/" .. group .. "/messages" .. match .. "3&stripSubjectprefix=true&mm=DOES_NOT_CONTAINS&mo=IS_EQUAL_TO&mid=" .. post_id .. "&chrome=raw&tz=" .. timezone)
       end
 
-    elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/messages%?noImage=true&noNavbar=true&chrome=raw") then
+    --[[elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/messages%?noImage=true&noNavbar=true&chrome=raw") then
       local timezone = extract_timezone(html)
       local group = extract_group(url)
-      check()
+      check()]]
 
     elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/topics/[0-9]+$") then
       local topic_id = string.match(url, "([0-9]+)$")
@@ -264,7 +266,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     elseif string.match(url, "^https?://groups%.yahoo%.com/neo/groups/[^/]+/conversations/topics$") then
       local timezone = extract_timezone(html)
       local group = extract_group(url)
-      local nextpage = string.match(url, 'data%-prev%-page%-start="([0-9]+)"')
+      local nextpage = string.match(html, 'data%-prev%-page%-start="([0-9]+)"')
       check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/topics?startTopicId=" .. nextpage .. "&count=15&sortOrder=desc&direction=-1&chrome=raw&tz=" .. timezone)
     end
     for newurl in string.gmatch(string.gsub(html, "&quot;", '"'), '([^"]+)') do
