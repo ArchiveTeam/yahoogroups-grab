@@ -56,7 +56,7 @@ if not WGET_LUA:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20191119.01'
+VERSION = '20191119.02'
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'yahoogroups'
 TRACKER_HOST = 'tracker.archiveteam.org'
@@ -188,6 +188,7 @@ class WgetArgs(object):
 
         if item_type == 'group':
             wget_args.append('https://groups.yahoo.com/neo/groups/{}/info'.format(item_value))
+            wget_args.append('https://groups.yahoo.com/{}'.format(item_value))
         else:
             raise Exception('Unknown item')
 
