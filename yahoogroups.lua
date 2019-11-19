@@ -260,6 +260,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local group = extract_group(url)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw?chrome=raw&tz=" .. timezone)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/")
+      check("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/messages/" .. post_id .. "?noImage=true&noNavbar=true&_gb=GB0&chrome=raw&tz=" .. timezone)
       --check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw")
       local match = string.match(html, "(%?advance=true&am=CONTAINS&at=email:[^@]+@&dm=IS_ANY&fs=false&count=)[0-9]+")
       if match then
@@ -276,14 +277,15 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local timezone = extract_timezone(html)
       local group = extract_group(url)
       check("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/topics/" .. topic_id .. "?noImage=true&noNavbar=true&_gb=GB0&chrome=raw&tz=" .. timezone)
-      check("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/topics/" .. topic_id .. "?noImage=true&noNavbar=true&_gb=GB1&chrome=raw&tz=" .. timezone)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/topics/" .. topic_id)
-
+      check("https://" .. domain .. "/api/v1/groups/" .. group .. "polls/?topicId=" .. topic_id .. "&chrome=raw&tz=" .. timezone)
+      check("https://" .. domain .. "/api/v1/groups/" .. group .. "/topics/" .. topic_id .. "/attachments?start=0&count=3&includeTotalCount=true&chrome=raw&tz=" .. timezone)
     elseif string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/conversations/topics$") then
       local timezone = extract_timezone(html)
       local group = extract_group(url)
       local nextpage = string.match(html, 'data%-prev%-page%-start="([0-9]+)"')
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/topics?startTopicId=" .. nextpage .. "&count=15&sortOrder=desc&direction=-1&chrome=raw&tz=" .. timezone)
+      check("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/topics?noImage=true&noNavbar=true&_gb=GB0&chrome=raw&tz=" .. timezone)
     end
     for newurl in string.gmatch(string.gsub(html, "&quot;", '"'), '([^"]+)') do
       checknewurl(newurl)
