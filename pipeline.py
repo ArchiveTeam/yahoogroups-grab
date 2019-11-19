@@ -60,7 +60,7 @@ if not WGET_LUA:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20191119.03'
+VERSION = '20191119.04'
 USER_AGENT = 'ArchiveTeam'
 TRACKER_ID = 'yahoogroups'
 TRACKER_HOST = 'tracker.archiveteam.org'
@@ -124,7 +124,7 @@ class PrepareDirectories(SimpleTask):
         item['warc_file_base'] = '%s-%s-%s' % (self.warc_prefix, escaped_item_name[:50],
             time.strftime('%Y%m%d-%H%M%S'))
 
-        open('%(item_dir)s/%(warc_file_base)s.warc' % item, 'w').close()
+        open('%(item_dir)s/%(warc_file_base)s.warc.gz' % item, 'w').close()
 
 class MoveFiles(SimpleTask):
     def __init__(self):
