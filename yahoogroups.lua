@@ -278,7 +278,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local group = extract_group(url)
       check("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/topics/" .. topic_id .. "?noImage=true&noNavbar=true&_gb=GB0&chrome=raw&tz=" .. timezone)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/topics/" .. topic_id)
-      check("https://" .. domain .. "/api/v1/groups/" .. group .. "polls/?topicId=" .. topic_id .. "&chrome=raw&tz=" .. timezone)
+      check("https://" .. domain .. "/api/v1/groups/" .. group .. "/polls/?topicId=" .. topic_id .. "&chrome=raw&tz=" .. timezone)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/topics/" .. topic_id .. "/attachments?start=0&count=3&includeTotalCount=true&chrome=raw&tz=" .. timezone)
     elseif string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/conversations/topics$") then
       local timezone = extract_timezone(html)
