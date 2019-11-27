@@ -245,9 +245,6 @@ print("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/message
       end
       if count > 0 then
         check(string.gsub(url, "start=[0-9]+", "start=" .. nextpage))
-print('queueing', string.gsub(url, "start=[0-9]+", "start=" .. nextpage))
-
-else print('skipping!')
       end
 
     --[[elseif string.match(url, "^https?://[^/]*groups.yahoo.com/api/v1/groups/[^/]+/topics%?"--startTopicId=1009&count=15&sortOrder=desc&direction=-1&chrome=raw&tz=America%2FLos_Angeles&ts=1574111731499")
