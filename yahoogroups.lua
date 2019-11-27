@@ -197,7 +197,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local group = extract_group(url)
       check("https://" .. domain .. "/neo/groups/" .. group)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/history?chrome=raw&tz=" .. timezone)
-      check("https://" .. domain .. "/api/v1/groups/" .. group .. "/")
+      --check("https://" .. domain .. "/api/v1/groups/" .. group .. "/")
 
     elseif string.match(url, "^https?://[^/]*groups%.yahoo%.com/api/v1/groups/[^/]+/history"--[[%?chrome=raw"]]) then
       local data = load_json_file(html)
@@ -239,7 +239,6 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local count = 0
       for _, message_data in ipairs(data["ygData"]["messages"]) do
         if check("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/messages/" .. message_data["messageId"]) then
-print("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/messages/" .. message_data["messageId"])
           count = count + 1
         end
       end
