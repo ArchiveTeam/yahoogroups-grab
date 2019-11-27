@@ -46,10 +46,14 @@ allowed = function(url, parenturl)
       or string.match(url, "^https?://xa%.yimg%.com/$")
       or string.match(url, "^https?://dmros%.ysm%.yahoo%.com/")
       or string.match(url, "&at=email:")
-      or string.match(url, "^https?://[^/]*groups.yahoo.com/api/v1/groups/[^/]+/topics")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/api/v1/groups/[^/]+/topics")
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/conversations/topics")
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/invitations/$")
-      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/management/$") then
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/management/$")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/invitations/members$")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/management/settings$")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/management/membership$")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/attachments$") then
     return false
   end
 
@@ -202,7 +206,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local group = extract_group(url)
       check("https://" .. domain .. "/neo/groups/" .. group)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/history?chrome=raw&tz=" .. timezone)
-      --check("https://" .. domain .. "/api/v1/groups/" .. group .. "/")
+      check("https://" .. domain .. "/api/v1/groups/" .. group .. "/")
 
     elseif string.match(url, "^https?://[^/]*groups%.yahoo%.com/api/v1/groups/[^/]+/history"--[[%?chrome=raw"]]) then
       local data = load_json_file(html)
@@ -232,7 +236,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local timezone = extract_timezone(html)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/messages?start=" .. post_id .. "&count=15&sortOrder=asc&direction=1&chrome=raw&tz=" .. timezone)
 
-    elseif string.match(url, "^https?://[^/]*groups.yahoo.com/api/v1/groups/[^/]+/messages%?"--[[start=[0-9]+&count=[0-9]+&sortOrder=asc&direction=1&chrome=raw"]])
+    elseif string.match(url, "^https?://[^/]*groups%.yahoo%.com/api/v1/groups/[^/]+/messages%?"--[[start=[0-9]+&count=[0-9]+&sortOrder=asc&direction=1&chrome=raw"]])
         and string.match(url, "&direction=%-?[0-9]+") then
       local direction = string.match(url, "&direction=(%-?[0-9]+)")
       local group = extract_group(url)
@@ -251,7 +255,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
         check(string.gsub(url, "start=[0-9]+", "start=" .. nextpage))
       end
 
-    --[[elseif string.match(url, "^https?://[^/]*groups.yahoo.com/api/v1/groups/[^/]+/topics%?"--startTopicId=1009&count=15&sortOrder=desc&direction=-1&chrome=raw&tz=America%2FLos_Angeles&ts=1574111731499")
+    --[[elseif string.match(url, "^https?://[^/]*groups%.yahoo%.com/api/v1/groups/[^/]+/topics%?"--startTopicId=1009&count=15&sortOrder=desc&direction=-1&chrome=raw&tz=America%2FLos_Angeles&ts=1574111731499")
         and string.match(url, "&direction=%-?[0-9]+") then
       local group = extract_group(url)
       local data = load_json_file(html)
@@ -281,9 +285,9 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local timezone = extract_timezone(html)
       local group = extract_group(url)
       check("https://" .. domain .. "/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw?chrome=raw&tz=" .. timezone)
-      check("https://" .. domain .. "/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/")
+      --check("https://" .. domain .. "/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/")
       --check("https://" .. domain .. "/neo/groups/" .. group .. "/conversations/messages/" .. post_id .. "?noImage=true&noNavbar=true&_gb=GB0&chrome=raw&tz=" .. timezone)
-      --check("https://groups.yahoo.com/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw")
+      --check("https://" .. domain .. "/api/v1/groups/" .. group .. "/messages/" .. post_id .. "/raw")
       --[[local match = string.match(html, "(%?advance=true&am=CONTAINS&at=email:[^@]+@&dm=IS_ANY&fs=false&count=)[0-9]+")
       if match then
         check("https://" .. domain .. "/api/v1/search/groups/" .. group .. "/messages" .. match .. "3&stripSubjectprefix=true&mm=DOES_NOT_CONTAINS&mo=IS_EQUAL_TO&mid=" .. post_id .. "&chrome=raw&tz=" .. timezone)
