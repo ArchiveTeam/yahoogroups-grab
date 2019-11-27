@@ -64,6 +64,11 @@ allowed = function(url, parenturl)
     tested[s] = tested[s] + 1
   end
 
+  if string.match(url, "^https?://[^/]*consent%.yahoo%.com") then
+    io.stdout:write("Got a consent problem.\n")
+    io.stdout:flush()
+  end
+
   if string.match(url, "^https?://s%.yimg%.com/[^/]+/defcovers/")
       or string.match(url, "^https?://xa%.yimg%.com") then
     return true
@@ -336,6 +341,11 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   url_count = url_count + 1
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
+
+  if string.match(url["url"], "^https?://[^/]*consent%.yahoo%.com") then
+    io.stdout:write("Got a consent problem.\n")
+    io.stdout:flush()
+  end
 
   if downloaded[url["url"]] then
     io.stdout:write("Already got URL. Likely incomplete response.\n")
