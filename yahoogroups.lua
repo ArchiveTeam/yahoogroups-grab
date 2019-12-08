@@ -41,6 +41,8 @@ end
 allowed = function(url, parenturl)
   if string.match(url, "'+")
       or string.match(url, "[<>\\%*%$;%^%[%],%(%){}]")
+      or string.match(url, "[&%?]%.")
+      or string.match(url, "=/&")
       or string.match(url, "^https?://login%.yahoo%.com/")
       or string.match(url, "^https?://b%.scorecardresearch%.com/")
       or string.match(url, "^https?://xa%.yimg%.com/$")
@@ -53,7 +55,10 @@ allowed = function(url, parenturl)
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/invitations/members$")
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/management/settings$")
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/management/membership$")
-      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/attachments$") then
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/attachments$")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/photos/")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/group/[^/]+/photos")
+      or not string.match(url, "^https?://[^%./]+%.") then
     return false
   end
 
@@ -188,9 +193,24 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     return string.gsub(match, "/", "%%2B")
   end
 
-  if allowed(url, nil) and status_code == 200
+  if allowed(url, nil) and (status_code == 200 or status_code == 403)
       and not string.match(url, "^https?://[^/]*yimg%.com/") then
     html = read_file(file)
+    if status_code == 403 then
+      if html == "Virus found!" then
+        return urls
+      end
+      abortgrab = true
+    end
+
+    for s in string.gmatch(html, "GROUPS%.API_ERROR_MSGS%s*=%s*([^;]+);") do
+      if s ~= "[]" then
+        io.stdout:write("Bad data.\n")
+        io.stdout:flush()
+        abortgrab = true
+      end
+    end
+
     if string.match(html, ">Please wait while we are redirecting!<") then
       local match = string.match(html, 'window.location.href%s+=%s+"(https?://[a-z]+%.groups%.yahoo%.com/[^"]+)"')
       if match ~= nil and extract_group(url) == extract_group(match) then
@@ -346,6 +366,12 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
 
+  if status_code == 301 and http_stat["newloc"] == url["url"] then
+    io.stdout:write("Bad redirect. Retrying.\n")
+    io.stdout:flush()
+    return wget.actions.CONTINUE
+  end
+
   if string.match(url["url"], "^https?://[^/]*consent%.yahoo%.com") then
     io.stdout:write("Got a consent problem.\n")
     io.stdout:flush()
@@ -387,7 +413,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   end
   
   if status_code >= 500
-      or (status_code >= 400 and status_code ~= 404)
+      or (status_code >= 400 and status_code ~= 404 and status_code ~= 403)
       or status_code  == 0 then
     io.stdout:write("Server returned "..http_stat.statcode.." ("..err.."). Sleeping.\n")
     io.stdout:flush()
