@@ -57,6 +57,11 @@ allowed = function(url, parenturl)
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/management/membership$")
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/attachments$")
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/photos/")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/database")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/links/all")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/polls/open")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/events")
+      or string.match(url, "^https?://[^/]*groups%.yahoo%.com/neo/groups/[^/]+/files")
       or string.match(url, "^https?://[^/]*groups%.yahoo%.com/group/[^/]+/photos")
       or not string.match(url, "^https?://[^%./]+%.") then
     return false
@@ -204,7 +209,11 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     end
 
     for s in string.gmatch(html, "GROUPS%.API_ERROR_MSGS%s*=%s*([^;]+);") do
-      if s ~= "[]" then
+      if s ~= "[]"
+          and not string.match(s, '{"files":{"e":[0-9]+,"s":307}}')
+          and not string.match(s, '{"links":{"e":[0-9]+,"s":307}}')
+          and not string.match(s, '{"database":{"e":[0-9]+,"s":307}}')
+          and not string.match(s, '{"polls":{"e":[0-9]+,"s":307}}') then
         io.stdout:write("Bad data.\n")
         io.stdout:flush()
         abortgrab = true
